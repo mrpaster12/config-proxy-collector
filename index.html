@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پروکسی و اشتراک رایگان</title>
+    <!-- Vazirmatn Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+            animation: shimmer 2s infinite;
+        }
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-md">
+                    P
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">هاب پروکسی و کانفیگ</h1>
+                    <span class="text-xs text-slate-400">به‌روزرسانی خودکار هر ۱۲ ساعت</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" aria-label="تغییر پوسته">
+                    <i class="fas fa-moon dark:hidden text-lg"></i>
+                    <i class="fas fa-sun hidden dark:block text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
+        <!-- Tab Navigation Buttons -->
+        <div class="flex border-b border-slate-200 dark:border-slate-800 mb-8 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl max-w-md mx-auto">
+            <button onclick="switchTab('configs')" id="tab-btn-configs" class="flex-1 py-3 text-center font-bold text-sm rounded-xl transition-all duration-300 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm">
+                <i class="fas fa-shield-alt ml-2"></i>اشتراک و کانفیگ‌ها
+            </button>
+            <button onclick="switchTab('proxies')" id="tab-btn-proxies" class="flex-1 py-3 text-center font-bold text-sm rounded-xl transition-all duration-300 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                <i class="fas fa-paper-plane ml-2"></i>پروکسی‌های تلگرام
+            </button>
+        </div>
+
+        <!-- Dynamic Loader -->
+        <div id="loader" class="flex flex-col items-center justify-center py-20 gap-4">
+            <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-slate-500 dark:text-slate-400 animate-pulse text-sm">در حال دریافت و بارگذاری آخرین اطلاعات...</p>
+        </div>
+
+        <!-- Main Content (Initially Hidden) -->
+        <div id="content-area" class="hidden">
+            
+            <!-- TAB 1: Configs Area -->
+            <section id="tab-configs" class="space-y-6">
+                <!-- Subscription Section -->
+                <div class="bg-gradient-to-tr from-slate-900 to-slate-850 text-white rounded-3xl p-6 shadow-xl border border-slate-800 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-2">
+                            <span class="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold">اشتراک خودکار</span>
+                            <h2 class="text-xl font-bold">لینک ساب‌اسکریپشن V2Ray</h2>
+                            <p class="text-sm text-slate-300 max-w-xl">این لینک را کپی کرده و در نرم‌افزارهای خود (v2rayNG, Nekobox, Shadowrocket) وارد کنید تا کانفیگ‌ها به‌طور مستمر به‌روزرسانی شوند.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 shrink-0">
+                            <button onclick="copySubLink('sub.txt')" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+                                <i class="fas fa-copy"></i>
+                                <span>کپی لینک Base64</span>
+                            </button>
+                            <button onclick="copySubLink('sub_raw.txt')" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold rounded-xl border border-slate-700 transition flex items-center gap-2">
+                                <i class="fas fa-code"></i>
+                                <span>کپی لینک خام</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <!-- Search Input -->
+                    <div class="relative flex-grow max-w-md">
+                        <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="config-search" oninput="handleSearch(this.value)" placeholder="جستجو در نام، کانال یا پروتکل..." class="w-full pr-11 pl-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all duration-200">
+                    </div>
+                    <!-- Protocol Chips -->
+                    <div id="protocol-filters" class="flex flex-wrap gap-1.5">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Configs Counter -->
+                <div class="text-sm text-slate-500 dark:text-slate-400 flex justify-between items-center px-2">
+                    <span>تعداد کانفیگ‌های فعال: <strong id="configs-count" class="text-slate-800 dark:text-slate-200">۰</strong></span>
+                </div>
+
+                <!-- Configs Cards Grid -->
+                <div id="configs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- TAB 2: Proxies Area -->
+            <section id="tab-proxies" class="hidden space-y-6">
+                <div class="bg-gradient-to-tr from-slate-900 to-slate-850 text-white rounded-3xl p-6 shadow-xl border border-slate-800 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-teal-600/10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-2">
+                            <span class="px-2.5 py-1 bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-lg text-xs font-semibold">اتصال سریع تلگرام</span>
+                            <h2 class="text-xl font-bold">پروکسی‌های فعال MTProto</h2>
+                            <p class="text-sm text-slate-300 max-w-xl">نیازی به فیلترشکن ندارید؛ روی دکمه‌ی اتصال سریع هر پروکسی کلیک کنید تا مستقیماً به پیام‌رسان تلگرام اضافه شود.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-sm text-slate-500 dark:text-slate-400 flex justify-between items-center px-2">
+                    <span>تعداد پروکسی‌های فعال: <strong id="proxies-count" class="text-slate-800 dark:text-slate-200">۰</strong></span>
+                    <span id="proxies-timestamp" class="text-xs"></span>
+                </div>
+
+                <!-- Proxies Grid -->
+                <div id="proxies-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- YouTube Channel Promotion -->
+        <div class="flex justify-center my-12 px-4">
+            <a href="https://www.youtube.com/@mr.paster8904" target="_blank" rel="noopener noreferrer" 
+               class="relative group overflow-hidden flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white font-bold rounded-2xl shadow-xl hover:shadow-red-500/20 transition-all duration-300 transform hover:-translate-y-1">
+                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-shimmer"></div>
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                </span>
+                <i class="fab fa-youtube text-2xl animate-pulse"></i>
+                <span class="text-base font-semibold tracking-wide">عضویت در کانال یوتیوب mrpaster</span>
+            </a>
+        </div>
+    </main>
+
+    <!-- Professional Clean Footer -->
+    <footer class="border-t border-slate-200 dark:border-slate-800/80 py-8 mt-auto text-center bg-white dark:bg-slate-950 transition-colors">
+        <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">
+            ساخته شده توسط <a href="https://github.com/mr-paster" target="_blank" class="text-red-500 hover:underline">mrpaster</a> با کمک gemini
+        </p>
+    </footer>
+
+    <!-- JavaScript Execution Logic -->
+    <script>
+        // Global State variables
+        let rawConfigs = [];
+        let rawProxies = {};
+        let filteredConfigs = [];
+        let activeTab = 'configs';
+        let activeProtocol = 'all';
+        let searchQuery = '';
+
+        // Protocol Styles & Labels
+        const protocolMeta = {
+            all: { name: 'همه', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300' },
+            vless: { name: 'VLESS', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300' },
+            vmess: { name: 'VMess', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' },
+            ss: { name: 'Shadowsocks', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' },
+            trojan: { name: 'Trojan', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
+            tuic: { name: 'Tuic', color: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-300' },
+            hysteria2: { name: 'Hysteria 2', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' },
+            hy2: { name: 'Hysteria 2', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' }
+        };
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupTheme();
+            await loadData();
+        });
+
+        // Theme management logic
+        function setupTheme() {
+            const toggleBtn = document.getElementById('theme-toggle');
+            
+            // Check cache or default to dark
+            if (localStorage.theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+
+            toggleBtn.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                }
+            });
+        }
+
+        // Fetch data files
+        async function loadData() {
+            try {
+                const [configsRes, proxiesRes] = await Promise.all([
+                    fetch('./configs.json').then(r => r.json()).catch(() => []),
+                    fetch('./proxies.json').then(r => r.json()).catch(() => ({ updated_at: "", proxies: [] }))
+                ]);
+
+                rawConfigs = configsRes;
+                rawProxies = proxiesRes;
+                filteredConfigs = [...rawConfigs];
+
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('content-area').classList.remove('hidden');
+
+                renderFilterChips();
+                renderConfigs();
+                renderProxies();
+
+            } catch (err) {
+                console.error("Failed loading configurations data", err);
+                document.getElementById('loader').innerHTML = `
+                    <div class="text-rose-500 text-center space-y-2">
+                        <i class="fas fa-exclamation-triangle text-3xl"></i>
+                        <p class="font-bold">خطا در بارگذاری اطلاعات</p>
+                        <p class="text-sm text-slate-400">امکان خواندن فایل‌های منبع وجود ندارد. لطفاً دقایقی دیگر تلاش کنید.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Generate absolute subscription path
+        function getSubscriptionUrl(filename) {
+            const path = window.location.href.split('?')[0].split('#')[0];
+            const baseDir = path.substring(0, path.lastIndexOf('/')) + '/';
+            return baseDir + filename;
+        }
+
+        // Copy actions helper
+        function copyText(text, successMsg) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast(successMsg, 'success'))
+                    .catch(() => fallbackCopy(text, successMsg));
+            } else {
+                fallbackCopy(text, successMsg);
+            }
+        }
+
+        function fallbackCopy(text, successMsg) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "absolute";
+            textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMsg, 'success');
+            } catch (err) {
+                showToast('خطا در کپی اطلاعات', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function copySubLink(filename) {
+            const url = getSubscriptionUrl(filename);
+            copyText(url, 'آدرس اشتراک با موفقیت کپی شد!');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl transform transition-all duration-300 ease-out translate-y-2 opacity-0 text-white text-sm font-semibold pointer-events-auto ${
+                type === 'success' ? 'bg-emerald-500 shadow-emerald-500/10' : 'bg-rose-500 shadow-rose-500/10'
+            }`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} text-lg"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => { toast.remove(); }, 300);
+            }, 3000);
+        }
+
+        // Toggle Views
+        function switchTab(tab) {
+            activeTab = tab;
+            const configTab = document.getElementById('tab-configs');
+            const proxyTab = document.getElementById('tab-proxies');
+            const configBtn = document.getElementById('tab-btn-configs');
+            const proxyBtn = document.getElementById('tab-btn-proxies');
+
+            const activeClass = "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm";
+            const inactiveClass = "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+
+            if (tab === 'configs') {
+                configTab.classList.remove('hidden');
+                proxyTab.classList.add('hidden');
+                configBtn.className = `flex-1 py-3 text-center font-bold text-sm rounded-xl transition-all duration-300 ${activeClass}`;
+                proxyBtn.className = `flex-1 py-3 text-center font-bold text-sm rounded-xl transition-all duration-300 ${inactiveClass}`;
+            } else {
+                configTab.classList.add('hidden');
+                proxyTab.classList.remove('hidden');
+                proxyBtn.className = `flex-1 py-3 text-center font-bold text-sm rounded-xl transition-all duration-300 ${activeClass}`;
+                configBtn.className = `flex-1 py-3 text-center font-bold text-sm rounded-xl transition-all duration-300 ${inactiveClass}`;
+            }
+        }
+
+        // Generate Filter Tabs
+        function renderFilterChips() {
+            const filterContainer = document.getElementById('protocol-filters');
+            // Get unique protocols present in retrieved configs list
+            const uniqueProtocols = ['all', ...new Set(rawConfigs.map(c => c.protocol).filter(p => p !== 'unknown'))];
+            
+            filterContainer.innerHTML = uniqueProtocols.map(proto => {
+                const label = protocolMeta[proto] ? protocolMeta[proto].name : proto.toUpperCase();
+                const isActive = activeProtocol === proto;
+                const activeStyle = "bg-indigo-600 text-white dark:bg-indigo-600";
+                const inactiveStyle = "bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300";
+                
+                return `
+                    <button onclick="filterProtocol('${proto}')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all ${isActive ? activeStyle : inactiveStyle}">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Update Filters & State
+        function filterProtocol(proto) {
+            activeProtocol = proto;
+            renderFilterChips();
+            applyFilters();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val.toLowerCase().trim();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            filteredConfigs = rawConfigs.filter(item => {
+                const matchProto = activeProtocol === 'all' || item.protocol === activeProtocol;
+                const matchSearch = searchQuery === '' || 
+                    item.remark.toLowerCase().includes(searchQuery) || 
+                    item.channel.toLowerCase().includes(searchQuery) ||
+                    item.protocol.toLowerCase().includes(searchQuery);
+                return matchProto && matchSearch;
+            });
+            renderConfigs();
+        }
+
+        // Render Configuration Grid UI
+        function renderConfigs() {
+            const grid = document.getElementById('configs-grid');
+            document.getElementById('configs-count').textContent = filteredConfigs.length;
+
+            if (filteredConfigs.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400">
+                        <i class="fas fa-magnifying-glass text-2xl mb-2"></i>
+                        <p class="text-sm">هیچ پیکربندی مطابق با جستجوی شما پیدا نشد.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredConfigs.map(item => {
+                const meta = protocolMeta[item.protocol] || { name: item.protocol.toUpperCase(), color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
+                return `
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold ${meta.color}">
+                                    ${meta.name}
+                                </span>
+                                <span class="text-xs text-slate-400 font-medium">
+                                    <i class="fas fa-bullhorn ml-1"></i>${item.channel}
+                                </span>
+                            </div>
+                            <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 truncate pt-2" title="${item.remark}">
+                                ${item.remark}
+                            </h3>
+                        </div>
+                        <div class="flex items-center gap-1.5 mt-2">
+                            <button onclick="copyText('${item.config}', 'کپی شد!')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+                                <i class="fas fa-copy"></i>
+                                <span>کپی کانفیگ</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Telegram Proxies Grid UI
+        function renderProxies() {
+            const grid = document.getElementById('proxies-grid');
+            const proxiesList = rawProxies.proxies || [];
+            
+            document.getElementById('proxies-count').textContent = proxiesList.length;
+            if (rawProxies.updated_at) {
+                document.getElementById('proxies-timestamp').innerHTML = `<i class="fas fa-clock ml-1"></i>بروزرسانی شده در: ${rawProxies.updated_at}`;
+            }
+
+            if (proxiesList.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400">
+                        <i class="fas fa-plane-slash text-2xl mb-2"></i>
+                        <p class="text-sm">هیچ پروکسی فعالی در دسترس نیست.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = proxiesList.map(item => {
+                return `
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500/30 dark:hover:border-teal-500/30 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">
+                                    MTProto
+                                </span>
+                                <span class="text-xs text-slate-400 font-medium">
+                                    <i class="fas fa-bullhorn ml-1"></i>${item.channel}
+                                </span>
+                            </div>
+                            <!-- Simple Connection Param Summary -->
+                            <div class="text-xs text-slate-500 dark:text-slate-400 space-y-1 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 font-mono">
+                                <div class="truncate">سرور: ${item.server}</div>
+                                <div>پورت: ${item.port}</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="${item.url}" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg shadow-teal-600/20 active:scale-95 text-center">
+                                <i class="fas fa-bolt animate-pulse"></i>
+                                <span>اتصال سریع</span>
+                            </a>
+                            <button onclick="copyText('${item.web_url}', 'لینک کپی شد!')" class="px-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition flex items-center justify-center" title="کپی لینک اشتراک گذاری">
+                                <i class="fas fa-share-nodes"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
